@@ -1,0 +1,220 @@
+/**
+  ******************************************************************************
+  * @file    Bootloader/stm32f10x_it.c
+  * @author  MCD Application Team
+  * @version V3.5.0
+  * @date    08-April-2011
+  * @brief   Main Interrupt Service Routines.
+  *          This file provides template for all exceptions handler and
+  *          peripherals interrupt service routine.
+  ******************************************************************************
+  * @attention
+  *
+  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
+  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
+  * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
+  * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
+  * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
+  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+  *
+  * <h2><center>&copy; COPYRIGHT 2011 STMicroelectronics</center></h2>
+  ******************************************************************************
+  */
+
+/* Includes ------------------------------------------------------------------*/
+#include "stm32f10x_it.h"
+#include "can_bootloader.h"
+
+/** @addtogroup STM32F10x_StdPeriph_Examples
+  * @{
+  */
+
+/* Private typedef -----------------------------------------------------------*/
+/* Private define ------------------------------------------------------------*/
+/* Private macro -------------------------------------------------------------*/
+/* Private variables ---------------------------------------------------------*/
+__IO uint8_t CAN_MsgIndex = 0;
+CanRxMsg CAN1_RxMessage[2];
+__IO uint8_t CAN1_CanRxMsgFlag = 0;
+/* Private function prototypes -----------------------------------------------*/
+/* Private functions ---------------------------------------------------------*/
+
+/******************************************************************************/
+/*            Cortex-M3 Processor Exceptions Handlers                         */
+/******************************************************************************/
+
+/**
+  * @brief  This function handles NMI exception.
+  * @param  None
+  * @retval None
+  */
+void NMI_Handler(void)
+{
+}
+
+/**
+  * @brief  This function handles Hard Fault exception.
+  * @param  None
+  * @retval None
+  */
+void HardFault_Handler(void)
+{
+  /* Go to infinite loop when Hard Fault exception occurs */
+  while (1)
+  {
+  }
+}
+
+/**
+  * @brief  This function handles Memory Manage exception.
+  * @param  None
+  * @retval None
+  */
+void MemManage_Handler(void)
+{
+  /* Go to infinite loop when Memory Manage exception occurs */
+  while (1)
+  {
+  }
+}
+
+/**
+  * @brief  This function handles Bus Fault exception.
+  * @param  None
+  * @retval None
+  */
+void BusFault_Handler(void)
+{
+  /* Go to infinite loop when Bus Fault exception occurs */
+  while (1)
+  {
+  }
+}
+
+/**
+  * @brief  This function handles Usage Fault exception.
+  * @param  None
+  * @retval None
+  */
+void UsageFault_Handler(void)
+{
+  /* Go to infinite loop when Usage Fault exception occurs */
+  while (1)
+  {
+  }
+}
+
+/**
+  * @brief  This function handles SVCall exception.
+  * @param  None
+  * @retval None
+  */
+void SVC_Handler(void)
+{
+}
+
+/**
+  * @brief  This function handles Debug Monitor exception.
+  * @param  None
+  * @retval None
+  */
+void DebugMon_Handler(void)
+{
+}
+
+/**
+  * @brief  This function handles PendSVC exception.
+  * @param  None
+  * @retval None
+  */
+void PendSV_Handler(void)
+{
+}
+
+/**
+  * @brief  This function handles SysTick Handler.
+  * @param  None
+  * @retval None
+  */
+void SysTick_Handler(void)
+{
+}
+
+/******************************************************************************/
+/*            STM32F10x Peripherals Interrupt Handlers                        */
+/******************************************************************************/
+
+
+
+/******************************************************************************/
+/*                 STM32F10x Peripherals Interrupt Handlers                   */
+/*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */
+/*  available peripheral interrupt handler's name please refer to the startup */
+/*  file (startup_stm32f10x_xx.s).                                            */
+/******************************************************************************/
+
+/**
+  * @brief  This function handles CAN1 interrupt request.
+  * @param  None
+  * @retval None
+  */
+#ifndef STM32F10X_CL
+void USB_LP_CAN1_RX0_IRQHandler(void)
+#else
+void CAN1_RX0_IRQHandler(void)
+#endif
+{
+  if (CAN_MessagePending(CAN1, CAN_FIFO0))
+  {
+    CAN_Receive(CAN1, CAN_FIFO0, &CAN1_RxMessage[CAN_MsgIndex&0x01]);
+
+    if (MSG_ID_TYPE == CAN_Id_Standard)
+    {
+      if ((CAN1_RxMessage[CAN_MsgIndex&0x01].IDE == CAN_Id_Standard)&& //消息类型必须匹配
+          (CAN1_RxMessage[CAN_MsgIndex&0x01].StdId == MSG_RECEIVE_ID)&& //消息ID必须匹配
+          (CAN1_RxMessage[CAN_MsgIndex&0x01].DLC == 8) && //数据长度必须为8
+          ((CAN1_RxMessage[CAN_MsgIndex&0x01].Data[0] == GetNAD()) || (CAN1_RxMessage[CAN_MsgIndex&0x01].Data[0] == NAD_BROADCAST))) //接点地址必须相等或者为广播地址
+      {
+        CAN1_CanRxMsgFlag = 1;
+      }
+    }
+    else
+    {
+      if ((CAN1_RxMessage[CAN_MsgIndex&0x01].IDE == CAN_Id_Extended) && //消息类型必须匹配
+          (CAN1_RxMessage[CAN_MsgIndex&0x01].ExtId == MSG_RECEIVE_ID) && //消息ID必须匹配
+          (CAN1_RxMessage[CAN_MsgIndex&0x01].DLC == 8) && //数据长度必须为8
+          ((CAN1_RxMessage[CAN_MsgIndex&0x01].Data[0] == GetNAD()) || (CAN1_RxMessage[CAN_MsgIndex&0x01].Data[0] == NAD_BROADCAST))) //接点地址必须相等或者为广播地址
+      {
+        CAN1_CanRxMsgFlag = 1;
+      }
+    }
+    CAN_ClearITPendingBit(CAN1, CAN_IT_FMP0);
+  }
+}
+
+/**
+  * @brief  This function handles CAN2 Handler.
+  * @param  None
+  * @retval None
+  */
+#ifdef STM32F10X_CL
+void CAN2_RX0_IRQHandler(void)
+{
+}
+#endif
+
+/**
+  * @brief  This function handles PPP interrupt request.
+  * @param  None
+  * @retval None
+  */
+/*void PPP_IRQHandler(void)
+{
+}*/
+
+/**
+  * @}
+  */
+
+
+/******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/

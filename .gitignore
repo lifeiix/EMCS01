@@ -1,0 +1,6 @@
+Tools/
+Build/
+DebugConfig/
+*.uvmpw.*
+*.uvguix.*
+*.uvoptx
