@@ -1,14 +1,14 @@
 /**
   ******************************************************************************
-  * @file    main.h 
+  * @file    stm32f30x_it.h 
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date    11-April-2014
-  * @brief   Header for main.c module
+  * @version V1.2.2
+  * @date    14-August-2015
+  * @brief   This file contains the headers of the interrupt handlers.
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT 2014 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT 2015 STMicroelectronics</center></h2>
   *
   * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
   * You may not use this file except in compliance with the License.
@@ -24,23 +24,37 @@
   *
   ******************************************************************************
   */
-  
+
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __MAIN_H
-#define __MAIN_H
+#ifndef __STM32F30X_IT_H
+#define __STM32F30X_IT_H
+
+#ifdef __cplusplus
+ extern "C" {
+#endif 
 
 /* Includes ------------------------------------------------------------------*/
-#include <stdio.h>
-#if defined(STM32F10X_HD)
-#include "stm32f10x_wbfd.h"
-#else
-#include "stm32f30x_mx01.h"
-#endif
+#include "main.h"
+
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 
-#endif /* __MAIN_H */
+void NMI_Handler(void);
+void HardFault_Handler(void);
+void MemManage_Handler(void);
+void BusFault_Handler(void);
+void UsageFault_Handler(void);
+void SVC_Handler(void);
+void DebugMon_Handler(void);
+void PendSV_Handler(void);
+void SysTick_Handler(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* __STM32F30X_IT_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

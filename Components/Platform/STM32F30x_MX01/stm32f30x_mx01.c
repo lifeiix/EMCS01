@@ -126,31 +126,52 @@ PUTCHAR_PROTOTYPE
   */
 void STM_USART_Config(void)
 {
-  GPIO_InitTypeDef GPIO_InitStruct;
-  USART_InitTypeDef USART_InitStruct;
+  GPIO_InitTypeDef GPIO_InitStructure;
+  USART_InitTypeDef USART_InitStructure;
 
-  RCC_APB2PeriphClockCmd(RCC_AHBPeriph_GPIOA | RCC_APB2Periph_USART1, ENABLE);
+  /* Enable GPIO clock */
+  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);
 
-  GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStruct.GPIO_Pin = GPIO_Pin_9;
-  GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+  /* Enable USART clock */
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE); 
 
-  GPIO_Init(GPIOA, &GPIO_InitStruct);
+  /* Connect PXx to USARTx_Tx */
+  GPIO_PinAFConfig(GPIOB, GPIO_PinSource6, GPIO_AF_7);
 
-  GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN;
-  GPIO_InitStruct.GPIO_Pin = GPIO_Pin_10;
+  /* Connect PXx to USARTx_Rx */
+  GPIO_PinAFConfig(GPIOB, GPIO_PinSource7, GPIO_AF_7);
+  
+  /* Configure USART Tx as alternate function push-pull */
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
+    
+  /* Configure USART Rx as alternate function push-pull */
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
 
-  GPIO_Init(GPIOA, &GPIO_InitStruct);
+  /* USARTx configured as follow:
+        - BaudRate = 115200 baud  
+        - Word Length = 8 Bits
+        - One Stop Bit
+        - No parity
+        - Hardware flow control disabled (RTS and CTS signals)
+        - Receive and transmit enabled
+  */
+  USART_InitStructure.USART_BaudRate = 115200;
+  USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+  USART_InitStructure.USART_StopBits = USART_StopBits_1;
+  USART_InitStructure.USART_Parity = USART_Parity_No;
+  USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+  USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 
-  USART_InitStruct.USART_BaudRate = 115200;
-  USART_InitStruct.USART_StopBits = USART_StopBits_1;
-  USART_InitStruct.USART_WordLength = USART_WordLength_8b;
-  USART_InitStruct.USART_Parity = USART_Parity_No;
-  USART_InitStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-  USART_InitStruct.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
-
-  USART_Init(USART1, &USART_InitStruct);
-//  USART_ITConfig(USART1,USART_IT_RXNE,ENABLE);
+  /* USART configuration */
+  USART_Init(USART1, &USART_InitStructure);
+    
+  /* Enable USART */
   USART_Cmd(USART1, ENABLE);
 }
 
